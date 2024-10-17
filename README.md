@@ -14,6 +14,10 @@
 - 2024/11/22 繳交複賽出席隊員名單
 - 2024/12/07 複賽 (實體)
 
+## 相關連結
+- [T-Brain 官網](https://tbrain.trendmicro.com.tw/Competitions/Details/37)
+- [AI CUP 官網](https://www.aicup.tw/ai-cup-2024-competition)
+
 ## 工作時程
 - 2024/10/18(五) 實作與訓練 Baseline Model，討論或 Survey 如何提出進步，有沒有什麼方法可以嘗試？
 - 2024/10/20(日) 完成 Baseline Model Training
