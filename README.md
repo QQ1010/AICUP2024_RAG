@@ -18,6 +18,17 @@
 - [T-Brain 官網](https://tbrain.trendmicro.com.tw/Competitions/Details/37)
 - [AI CUP 官網](https://www.aicup.tw/ai-cup-2024-competition)
 
+## 代辦任務
+### 任務s
+- 針對 PDF 的 圖片 和 表格 進行處理   
+- 針對 Retrieve 方式改用其他方式 e.g. 可能可以參考 [huggingface multiple choice](https://github.com/huggingface/transformers/blob/main/examples/pytorch/multiple-choice/run_swag_no_trainer.py)
+- Semantic ID ? 
+
+### QQ
+
+### Liam
+
+
 ## 工作時程
 - 2024/10/18(五) 實作與訓練 Baseline Model，討論或 Survey 如何提出進步，有沒有什麼方法可以嘗試？
 - 2024/10/20(日) 完成 Baseline Model Training
