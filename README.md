@@ -20,20 +20,33 @@
 
 ## 代辦任務
 ### 任務s
-- 針對 PDF 的 圖片 和 表格 進行處理   
-- 針對 Retrieve 方式改用其他方式 e.g. 可能可以參考 [huggingface multiple choice](https://github.com/huggingface/transformers/blob/main/examples/pytorch/multiple-choice/run_swag_no_trainer.py)
+- 資料前處理
+    - **針對 PDF 的 圖片 和 表格 進行處理**
+    - **Summary**
+    - 產生更多的 queries/找其他金融相關的資料集
+    - 去 noise
+- 針對 Retrieve 方式改用其他方式 
+    - 不 Fine-tune: **套 Pre-train Models 去分析表現**
+        - cross model
+        - two tower model
+        - 要是支援中文的 Model
+        - 翻譯?
+    - Fine-tune e.g. 可能可以參考 [huggingface multiple choice](https://github.com/huggingface/transformers/blob/main/examples/pytorch/multiple-choice/run_swag_no_trainer.py)
+        - 找其他金融相關的資料集去 Fine-tune
 - Semantic ID ? 
 
-### QQ
-
-### Liam
-
+### 2024/10/25
+#### QQ
+- **針對 PDF 的 圖片 和 表格 進行處理**
+- **Summary**
+#### Liam
+- 不 Fine-tune: **套 Pre-train Models 去分析表現**
 
 ## 工作時程
 - 2024/10/18(五) 實作與訓練 Baseline Model，討論或 Survey 如何提出進步，有沒有什麼方法可以嘗試？
 - 2024/10/20(日) 完成 Baseline Model Training
 - 2024/10/21(一) 討論 Baseline Model 的結果以及進步方法
-- 2024/10/25(五) (留空給討論進步方法 or 討論實作)
+- 2024/10/25(五) 進步方法完成並嘗試結果，討論下一步
 - 2024/10/27(日) 完成進步後的 Model 實作與 Training
 - 2024/10/28(一) 討論進步的 Model 並看看要怎麼辦
 - 2024/10/28(一) 預計完成 (預留一週看看進度可以挪用)
