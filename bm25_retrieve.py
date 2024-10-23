@@ -6,6 +6,9 @@ from tqdm import tqdm
 import jieba  # 用於中文文本分詞
 import pdfplumber  # 用於從PDF文件中提取文字的工具
 from rank_bm25 import BM25Okapi  # 使用BM25演算法進行文件檢索
+import re
+import torch
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 # 載入參考資料，返回一個字典，key為檔案名稱，value為PDF檔內容的文本
 def load_data(source_path):
@@ -75,10 +78,59 @@ def read_pdf(pdf_loc, page_infos: list = None):
     if pdf_images:
         with open(image_filename, 'w', encoding='utf8') as f:
             f.write(str(pdf_images))
-
+    
+    # 產生 Summary 檔案
+    summarize_text(text_filename)
 
     return pdf_text  # 返回萃取出的文本
 
+# 總結文字內容，將其轉換為一個字串
+def summarize_text(txt_loc):
+    # [TODO] 可自行替換其他摘要方法，以提升效能
+    with open(txt_loc, 'r', encoding='utf8') as f:
+        article_text = f.read()
+    
+    # 讀入模型
+    WHITESPACE_HANDLER = lambda k: re.sub('\s+', ' ', re.sub('\n+', ' ', k.strip()))
+    model_name = "csebuetnlp/mT5_multilingual_XLSum"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+
+    # 使用 GPU 如果可用
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = model.to(device)  # 將模型移動到 GPU
+
+    input_ids = tokenizer(
+                    [WHITESPACE_HANDLER(article_text)],
+                    return_tensors="pt",
+                    padding="max_length",
+                    truncation=True,
+                    max_length=512
+                )["input_ids"].to(device)  # 將 input_ids 也移動到 GPU
+
+    output_ids = model.generate(
+                    input_ids=input_ids,
+                    max_length=512,
+                    no_repeat_ngram_size=2,
+                    num_beams=4
+                )[0]
+
+    summary = tokenizer.decode(
+                    output_ids,
+                    skip_special_tokens=True,
+                    clean_up_tokenization_spaces=False
+                )
+    
+    # 檔案名字，摘取 txt_loc 並加上後綴 _summary.txt，txt_loc 是 Data/dataPreprocessing/finance/*.txt 或 Data/dataPreprocessing/insurance/*.txt ，存到txt_loc同一個資料夾
+    base_filename = os.path.splitext(os.path.basename(txt_loc))[0]
+    sub_dir = os.path.basename(os.path.dirname(txt_loc))  # 這裡抓取 'finance' 或 'insurance'
+    output_dir = os.path.join('Data', 'dataPreprocessing', sub_dir)
+    summary_filename = os.path.join(output_dir, f"{base_filename}_summary.txt")
+
+    with open(summary_filename, 'w', encoding='utf8') as f:
+        f.write(summary)
+
+    return summary
 
 # 根據查詢語句和指定的來源，檢索答案
 def BM25_retrieve(qs, source, corpus_dict):
