@@ -5,14 +5,31 @@ def calculate_precision(y_true, y_pred):
     if len(y_true) != len(y_pred):
         raise ValueError("Length of ground truths and predictions do not match!")
 
-    total = 0
+    correct = 0
+    finance_false_cases = []
+    insurance_false_cases = []
+    faq_false_cases = []
     for true, pred in zip(y_true, y_pred):
         if true["qid"] != pred["qid"]:
             raise ValueError(f"QID mismatch: ground truth qid={true['qid']}, prediction qid={pred['qid']}")
         else:
-            total += true["retrieve"] == pred["retrieve"]
-
-    return total / len(y_true)
+            if true["retrieve"] == pred["retrieve"]:
+                correct += 1
+            else:
+                if true["category"] == "finance":
+                    finance_false_cases.append((true, pred))
+                elif true["category"] == "insurance":
+                    insurance_false_cases.append((true, pred))
+                elif true["category"] == "faq":
+                    faq_false_cases.append((true, pred))
+    print("correct: ", correct)
+    print("total: ", len(y_true))
+    print("finance_false_cases: ", len(finance_false_cases))
+    print("insurance_false_cases: ", len(insurance_false_cases))
+    print("faq_false_cases: ", len(faq_false_cases))
+    # print("faq_false_cases: ", faq_false_cases)
+    print("insurance_false_cases: ", insurance_false_cases)
+    return correct / len(y_true)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some paths and files.')
