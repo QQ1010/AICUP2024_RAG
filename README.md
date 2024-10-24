@@ -51,3 +51,38 @@
 - 2024/10/28(一) 討論進步的 Model 並看看要怎麼辦
 - 2024/10/28(一) 預計完成 (預留一週看看進度可以挪用)
 - 2024/11/09 參加初賽，繳交結果到系統 (only 3 次機會)
+
+## 安裝
+#### 注意：要在 Python 3 的環境
+```
+pip install -r requirements.txt
+```
+
+#### 安裝 Pytorch
+```
+> conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+> conda install conda-forge::transformers
+> pip install sentencepiece
+> pip install tokenizers
+> pip install protobuf
+```
+
+## [先不要安裝，會有衝突，待解決]
+#### 安裝圖片轉文字套件
+```
+> conda install -c conda-forge tesseract pytesseract
+
+> wget https://github.com/tesseract-ocr/tessdata_best/blob/main/chi_tra.traineddata
+
+> mv chi_tra.traineddata $(conda info --base)/envs/{your_condaEnvName}/share/tessdata/
+```
+檢查
+```
+tesseract -v
+```
+![alt text](image.png)
+
+```
+which tesseract
+```
+![alt text](image-1.png)
