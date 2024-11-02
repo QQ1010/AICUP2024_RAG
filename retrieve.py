@@ -66,13 +66,13 @@ class RerankRetriever(RetrievalStrategy):
 
     def retrieve(self, query, source_id, source_context):
         query_doc_pairs = [[query, doc] for doc in source_context]
-        score = self.reranker.compute_score(query_doc_pairs)
+        score = self.reranker.compute_score(query_doc_pairs, normalize=True)
         ans_id = source_id[score.index(max(score))]
         return ans_id
 
     def score(self, query, source_context):
         query_doc_pairs = [[query, doc] for doc in source_context]
-        score = self.reranker.compute_score(query_doc_pairs)
+        score = self.reranker.compute_score(query_doc_pairs, normalize=True)
         return max(score)
 
 
@@ -93,6 +93,9 @@ class Retriever:
             score = self.strategy.score(
                 sample["query"], paragraphs)
             source_context_score.append(score)
+        # if sample["qid"] == 51:
+        #     print(source_context_score)
+        #     breakpoint()
         return sample["source"][source_context_score.index(max(source_context_score))]
 
     def _split_by_length_with_overlap(self, text, length=100, overlap=20):
