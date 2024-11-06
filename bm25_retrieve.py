@@ -100,26 +100,30 @@ def summarize_text(txt_loc):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = model.to(device)  # 將模型移動到 GPU
 
-    input_ids = tokenizer(
-                    [WHITESPACE_HANDLER(article_text)],
-                    return_tensors="pt",
-                    padding="max_length",
-                    truncation=True,
-                    max_length=512
-                )["input_ids"].to(device)  # 將 input_ids 也移動到 GPU
+    summaries = []
+    paragraphs = _split_by_length_with_overlap(article_text, length=256, overlap=100)
+    for paragraph in paragraphs:
+        input_ids = tokenizer(
+                        [WHITESPACE_HANDLER(paragraph)],
+                        return_tensors="pt",
+                        padding="max_length",
+                        truncation=True,
+                        max_length=512
+                    )["input_ids"].to(device)  # 將 input_ids 也移動到 GPU
 
-    output_ids = model.generate(
-                    input_ids=input_ids,
-                    max_length=512,
-                    no_repeat_ngram_size=2,
-                    num_beams=4
-                )[0]
+        output_ids = model.generate(
+                        input_ids=input_ids,
+                        max_length=512,
+                        no_repeat_ngram_size=2,
+                        num_beams=4
+                    )[0]
 
-    summary = tokenizer.decode(
-                    output_ids,
-                    skip_special_tokens=True,
-                    clean_up_tokenization_spaces=False
-                )
+        summary = tokenizer.decode(
+                        output_ids,
+                        skip_special_tokens=True,
+                        clean_up_tokenization_spaces=False
+                    )
+        summaries.append(summary)
     
     # 檔案名字，摘取 txt_loc 並加上後綴 _summary.txt，txt_loc 是 Data/dataPreprocessing/finance/*.txt 或 Data/dataPreprocessing/insurance/*.txt ，存到txt_loc同一個資料夾
     base_filename = os.path.splitext(os.path.basename(txt_loc))[0]
@@ -128,9 +132,18 @@ def summarize_text(txt_loc):
     summary_filename = os.path.join(output_dir, f"{base_filename}_summary.txt")
 
     with open(summary_filename, 'w', encoding='utf8') as f:
-        f.write(summary)
+        for summary in summaries:
+            f.write(summary + '\n')
 
-    return summary
+    return summaries
+
+def _split_by_length_with_overlap(text, length=100, overlap=20):
+        paragraphs = []
+        i = 0
+        while i < len(text):
+            paragraphs.append(text[i:i+length])
+            i += length - overlap
+        return paragraphs
 
 # 根據查詢語句和指定的來源，檢索答案
 def BM25_retrieve(qs, source, corpus_dict):
