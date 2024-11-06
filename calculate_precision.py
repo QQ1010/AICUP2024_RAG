@@ -27,8 +27,9 @@ def calculate_precision(y_true, y_pred):
     print("finance_false_cases: ", len(finance_false_cases))
     print("insurance_false_cases: ", len(insurance_false_cases))
     print("faq_false_cases: ", len(faq_false_cases))
-    # print("faq_false_cases: ", faq_false_cases)
+    print("finance_false_cases: ", finance_false_cases)
     print("insurance_false_cases: ", insurance_false_cases)
+    print("faq_false_cases: ", faq_false_cases)
     return correct / len(y_true)
 
 if __name__ == "__main__":

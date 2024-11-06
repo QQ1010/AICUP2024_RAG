@@ -3,15 +3,32 @@ import json
 import argparse
 from concurrent.futures import ProcessPoolExecutor
 
-from tqdm import tqdm
 import pdfplumber
+import pytesseract
+from tqdm import tqdm
+from pdf2image import convert_from_path
+
+
+def load_faq_data(source_path):
+    corpus_dict_faq = {}
+    with open(source_path, 'r') as f:
+        key_to_source_dict = json.load(f)
+        for key, value in key_to_source_dict.items():
+            content = ''
+            for item in value:
+                content += (item['question'] + '、'.join(item['answers']))
+            corpus_dict_faq[key] = content
+    return corpus_dict_faq
 
 
 def load_data(source_path):
-    masked_file_ls = [file for file in os.listdir(source_path) if file.endswith('.pdf')]
+    masked_file_ls = [file for file in os.listdir(
+        source_path) if file.endswith('.pdf')]
     with ProcessPoolExecutor() as executor:
-        results = list(tqdm(executor.map(read_pdf, [os.path.join(source_path, file) for file in masked_file_ls]), total=len(masked_file_ls)))
-    corpus_dict = {int(file.replace('.pdf', '')): result for file, result in zip(masked_file_ls, results)}
+        results = list(tqdm(executor.map(read_pdf, [os.path.join(
+            source_path, file) for file in masked_file_ls]), total=len(masked_file_ls)))
+    corpus_dict = {int(file.replace('.pdf', '')): result for file,
+                   result in zip(masked_file_ls, results)}
     return corpus_dict
 
 
@@ -27,22 +44,25 @@ def read_pdf(pdf_loc, page_infos: list = None):
             if text:
                 pdf_text += text
         pdf.close()
+
+        if pdf_text == '':
+            print(pdf_loc)
+            pdf_text += ocr_pdf(pdf_loc)
         return pdf_text
     except Exception as e:
         print(f"Error reading {pdf_loc}: {e}")
         return ""
 
 
-def load_faq_data(source_path):
-    corpus_dict_faq = {}
-    with open(source_path, 'r') as f:
-        key_to_source_dict = json.load(f)
-        for key, value in key_to_source_dict.items():
-            content = ''
-            for item in value:
-                content += (item['question'] + '、'.join(item['answers']))
-            corpus_dict_faq[key] = content
-    return corpus_dict_faq
+def ocr_pdf(pdf_loc):
+    images = convert_from_path(pdf_loc)
+    all_text = ""
+    for image in images:
+        text = pytesseract.image_to_string(
+            image, lang='chi_tra') + "\n"  # 設定語言為繁體中文
+        all_text += text
+
+    return all_text
 
 
 if __name__ == "__main__":

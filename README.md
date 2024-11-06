@@ -92,3 +92,29 @@ tesseract -v
 which tesseract
 ```
 ![alt text](image-1.png)
+
+## Liam 環境
+Python=3.9.20
+```
+conda create -n aicup python=3.9.20
+```
+Pytorch=2.4.1+cu121
+```
+pip install torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 --index-url https://download.pytorch.org/whl/cu121
+```
+Other packages
+```
+tqdm==4.66.5
+rank_bm25==0.2.2
+transformers==4.45.2
+setence-transformers==3.2.0
+FlagEmbedding==1.2.11
+pdfplumber==0.11.4
+pdf2image==1.17.0
+pytesseract==0.3.13
+```
+Conda packages
+```
+conda install -c conda-forge tesseract=5.3.1
+conda install -c anaconda poppler=22.12.0
+```
