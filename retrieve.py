@@ -83,6 +83,21 @@ class Retriever:
     def retrieve(self, sample):
         return self.strategy.retrieve(sample["query"], sample["source"], sample["source_context"])
 
+    # def retrieve_by_paragraph(self, sample):
+    #     source_context_score = []
+    #     for context in sample["source_context"]:
+    #         if context == '':
+    #             source_context_score.append(0)
+    #             continue
+    #         paragraphs = self._split_by_length_with_overlap(context, 450, 100)
+    #         score = self.strategy.score(
+    #             sample["query"], paragraphs)
+    #         source_context_score.append(score)
+    #     # if sample["qid"] == 51:
+    #     #     print(source_context_score)
+    #     #     breakpoint()
+    #     return sample["source"][source_context_score.index(max(source_context_score))]
+    
     def retrieve_by_paragraph(self, sample):
         source_context_score = []
         for context in sample["source_context"]:
@@ -93,9 +108,23 @@ class Retriever:
             score = self.strategy.score(
                 sample["query"], paragraphs)
             source_context_score.append(score)
-        # if sample["qid"] == 51:
-        #     print(source_context_score)
-        #     breakpoint()
+        cnt_score_over = 0
+        index_list = []
+        for i, score in enumerate(source_context_score):
+            if score >= 0.9:
+                cnt_score_over += 1
+                index_list.append((i, sample["source"][i]))
+        summary_score = []
+        if cnt_score_over > 1 and sample["category"] != 'faq':
+            ## 使用 summary_sample 來找出最高分數的 context
+            for idx, data_idx in index_list:
+                print(idx, source_context_score[idx])
+                paragraphs = self._split_by_length_with_overlap(sample["source_summary_context"][idx], 450, 100)
+                score = self.strategy.score(
+                    sample["query"], paragraphs)
+                summary_score.append((data_idx, score))
+            max_tumple = max(summary_score, key=lambda x: x[1])
+            return max_tumple[0]
         return sample["source"][source_context_score.index(max(source_context_score))]
 
     def _split_by_length_with_overlap(self, text, length=100, overlap=20):

@@ -29,11 +29,13 @@ class MyDataset(Dataset):
         source_id = sample["source"]
         
         source_context = []
+        summary_context = []
         if category != "faq":
             base_path = os.path.join("Data", "dataPreprocessing", category)
 
             for id in source_id:
                 file_path = os.path.join(base_path, f"{id}_text.txt")
+                summary_file_path = os.path.join(base_path, f"{id}_text_summary.txt")
                 try:
                     with open(file_path, 'r', encoding='utf-8') as f:
                         text = f.read()
@@ -42,12 +44,22 @@ class MyDataset(Dataset):
                     print(f"檔案 {file_path} 不存在，跳過此檔案。")
                 except Exception as e:
                     print(f"讀取檔案 {file_path} 時發生錯誤: {e}")
+                
+                try:
+                    with open(summary_file_path, 'r', encoding='utf-8') as f:
+                        text = f.read()
+                        summary_context.append(text)
+                except FileNotFoundError:
+                    print(f"檔案 {summary_file_path} 不存在，跳過此檔案。")
+                except Exception as e:
+                    print(f"讀取檔案 {summary_file_path} 時發生錯誤: {e}")
         else:
             for id in source_id:
                 context = self.source_faq.get(str(id), "")
                 source_context.append(context)
 
         sample["source_context"] = source_context
+        sample["source_summary_context"] = summary_context
         return sample
     
 if __name__ == "__main__":
