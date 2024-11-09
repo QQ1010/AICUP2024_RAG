@@ -36,7 +36,7 @@ class BM25Retriever(RetrievalStrategy):
 class BiEncorderRetriever(RetrievalStrategy):
     def __init__(self, model_name, framework='sentence-transformers'):
         if framework == 'sentence-transformers':
-            self.model = SentenceTransformer(model_name)
+            self.model = SentenceTransformer(model_name, trust_remote_code=True)
         elif framework == 'flag':
             self.model = FlagModel(model_name,
                                    query_instruction_for_retrieval="为这个句子生成表示以用于检索相关文章：",
@@ -83,22 +83,24 @@ class Retriever:
     def retrieve(self, sample):
         return self.strategy.retrieve(sample["query"], sample["source"], sample["source_context"])
 
-    # def retrieve_by_paragraph(self, sample):
-    #     source_context_score = []
-    #     for context in sample["source_context"]:
-    #         if context == '':
-    #             source_context_score.append(0)
-    #             continue
-    #         paragraphs = self._split_by_length_with_overlap(context, 450, 100)
-    #         score = self.strategy.score(
-    #             sample["query"], paragraphs)
-    #         source_context_score.append(score)
-    #     # if sample["qid"] == 51:
-    #     #     print(source_context_score)
-    #     #     breakpoint()
-    #     return sample["source"][source_context_score.index(max(source_context_score))]
-    
     def retrieve_by_paragraph(self, sample):
+        source_context_score = []
+        for context in sample["source_context"]:
+            if context == '':
+                source_context_score.append(0)
+                continue
+            paragraphs = self._split_by_length_with_overlap(context, 450, 100)
+            score = self.strategy.score(
+                sample["query"], paragraphs)
+            source_context_score.append(score)
+        # if sample["qid"] in [64, 67, 86, 94, 97, 99]:
+        #     print('qid:', sample['qid'])
+        #     for s, score in zip(sample['source'], source_context_score):
+        #         print(f"source: {s}, score: {float(score):.6f}")
+            # breakpoint()
+        return sample["source"][source_context_score.index(max(source_context_score))]
+    
+    def retrieve_by_paragraph_with_summary(self, sample):
         source_context_score = []
         for context in sample["source_context"]:
             if context == '':
@@ -119,7 +121,7 @@ class Retriever:
             ## 使用 summary_sample 來找出最高分數的 context
             for idx, data_idx in index_list:
                 print(idx, source_context_score[idx])
-                paragraphs = self._split_by_length_with_overlap(sample["source_summary_context"][idx], 450, 100)
+                paragraphs = self._split_by_length_with_overlap(sample["source_summary_context"][idx], 500, 100)
                 score = self.strategy.score(
                     sample["query"], paragraphs)
                 summary_score.append((data_idx, score))
@@ -169,7 +171,7 @@ if __name__ == "__main__":
 
     if args.model_name:
         model_name = args.model_name.replace('/', '_').replace('-', '_')
-        output_file_name = f'{args.strategy}_{model_name}.json'
+        output_file_name = f'{args.strategy}_{model_name}_test_450_100.json'
 
     answer_dict = {"answers": []}  # 初始化字典
     for i in tqdm(range(len(dataset))):
