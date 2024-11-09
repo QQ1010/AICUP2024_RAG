@@ -19,12 +19,6 @@ class MyDataset(Dataset):
         
         with open(os.path.join(processed_path, 'faq.json'), 'r') as f:
             self.source_faq = json.load(f)
-
-        with open(os.path.join(processed_path, 'finance.json'), 'r') as f:
-            self.source_finance = json.load(f)
-        
-        with open(os.path.join(processed_path, 'insurance.json'), 'r') as f:
-            self.source_insurance = json.load(f)
         
     def __len__(self):
         return len(self.data)
@@ -33,17 +27,25 @@ class MyDataset(Dataset):
         sample = self.data[index]
         category = sample["category"]
         source_id = sample["source"]
-
-        source_map = {
-            "faq": self.source_faq,
-            "finance": self.source_finance,
-            "insurance": self.source_insurance
-        }
-
+        
         source_context = []
-        for id in source_id:
-            context = source_map[category].get(str(id), "Context not found")
-            source_context.append(context)
+        if category != "faq":
+            base_path = os.path.join("Data", "dataPreprocessing", category)
+
+            for id in source_id:
+                file_path = os.path.join(base_path, f"{id}_text.txt")
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        text = f.read()
+                        source_context.append(text)
+                except FileNotFoundError:
+                    print(f"檔案 {file_path} 不存在，跳過此檔案。")
+                except Exception as e:
+                    print(f"讀取檔案 {file_path} 時發生錯誤: {e}")
+        else:
+            for id in source_id:
+                context = self.source_faq.get(str(id), "")
+                source_context.append(context)
 
         sample["source_context"] = source_context
         return sample

@@ -112,6 +112,7 @@ FlagEmbedding==1.2.11
 pdfplumber==0.11.4
 pdf2image==1.17.0
 pytesseract==0.3.13
+pillow==11.0.0
 ```
 Conda packages
 ```

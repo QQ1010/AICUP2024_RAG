@@ -7,6 +7,7 @@ import pdfplumber
 import pytesseract
 from tqdm import tqdm
 from pdf2image import convert_from_path
+from PIL import Image, ImageEnhance
 
 
 def load_faq_data(source_path):
@@ -57,12 +58,27 @@ def read_pdf(pdf_loc, page_infos: list = None):
 def ocr_pdf(pdf_loc):
     images = convert_from_path(pdf_loc)
     all_text = ""
+    custom_config = r'--oem 3 --psm 6 -c preserve_interword_spaces=0'
+
     for image in images:
+        image = preprocess_image(image)
         text = pytesseract.image_to_string(
-            image, lang='chi_tra') + "\n"  # 設定語言為繁體中文
-        all_text += text
+            image, lang='chi_tra', config=custom_config) # 設定語言為繁體中文
+        # text = ' '.join(text.split())
+        all_text += text + "\n" 
 
     return all_text
+
+
+def preprocess_image(image):
+    # 轉為灰度
+    image = image.convert('L')
+    # 提高對比度
+    enhancer = ImageEnhance.Contrast(image)
+    image = enhancer.enhance(2)
+    # 二值化
+    image = image.point(lambda x: 0 if x < 128 else 255, '1')
+    return image
 
 
 if __name__ == "__main__":
@@ -77,19 +93,47 @@ if __name__ == "__main__":
 
     os.makedirs(args.output_path, exist_ok=True)
 
-    # 處理pdf資料
-    pdf_category = ['insurance', 'finance']
-    for category in pdf_category:
-        source_path = os.path.join(args.source_path, category)
-        corpus_dict = load_data(source_path)
-        sorted_corpus_dict = dict(sorted(corpus_dict.items()))
-        with open(os.path.join(args.output_path, f'{category}.json'), 'w', encoding='utf8') as f:
-            json.dump(sorted_corpus_dict, f, ensure_ascii=False, indent=4)
+    # # 處理pdf資料
+    # pdf_category = ['insurance', 'finance']
+    # for category in pdf_category:
+    #     source_path = os.path.join(args.source_path, category)
+    #     corpus_dict = load_data(source_path)
+    #     sorted_corpus_dict = dict(sorted(corpus_dict.items()))
+    #     with open(os.path.join(args.output_path, f'{category}.json'), 'w', encoding='utf8') as f:
+    #         json.dump(sorted_corpus_dict, f, ensure_ascii=False, indent=4)
 
-    # 處理faq資料
-    source_path_faq = os.path.join(
-        args.source_path, 'faq/pid_map_content.json')
-    corpus_dict_faq = load_faq_data(source_path_faq)
-    sorted_corpus_dict_faq = dict(sorted(corpus_dict_faq.items()))
-    with open(os.path.join(args.output_path, 'faq.json'), 'w', encoding='utf8') as f:
-        json.dump(sorted_corpus_dict_faq, f, ensure_ascii=False, indent=4)
+    # # 處理faq資料
+    # source_path_faq = os.path.join(
+    #     args.source_path, 'faq/pid_map_content.json')
+    # corpus_dict_faq = load_faq_data(source_path_faq)
+    # sorted_corpus_dict_faq = dict(sorted(corpus_dict_faq.items()))
+    # with open(os.path.join(args.output_path, 'faq.json'), 'w', encoding='utf8') as f:
+    #     json.dump(sorted_corpus_dict_faq, f, ensure_ascii=False, indent=4)
+
+    ori_path = os.path.join("Data", "reference", 'finance')
+    base_path = os.path.join("Data", "dataPreprocessing", 'finance')
+    file_names = [f for f in os.listdir(base_path) if f.endswith("_text.txt")]
+    file_names = sorted(file_names)
+    for file_name in tqdm(file_names):
+        print(f"處理檔案 {file_name}")
+        file_path = os.path.join(base_path, file_name)
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                text = f.read()
+        except FileNotFoundError:
+            print(f"檔案 {file_path} 不存在，跳過此檔案。")
+        except Exception as e:
+            print(f"讀取檔案 {file_path} 時發生錯誤: {e}")
+        
+        if text == '':
+            id = file_name.split('_')[0]
+            pdf_path = os.path.join(ori_path, f"{id}.pdf")
+            ocr_text = ocr_pdf(pdf_path)
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(ocr_text)
+        
+
+    # test_path = '/home/guest/r12922a14/AICUP2024_RAG/Data/reference/finance/1.pdf'
+    # ocr_text = ocr_pdf(test_path)
+    # with open('1_w_config_and_img_enhance.txt', 'w', encoding='utf-8') as f:
+        # f.write(ocr_text)
