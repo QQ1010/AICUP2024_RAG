@@ -72,11 +72,10 @@ def read_pdf(pdf_loc, page_infos: list = None):
 
 # 總結文字內容，將其轉換為一個字串
 def summarize_text(txt_loc):
-    # [TODO] 可自行替換其他摘要方法，以提升效能
     with open(txt_loc, 'r', encoding='utf8') as f:
         article_text = f.read()
     
-    # 讀入模型
+    # 讀入 summary 模型
     WHITESPACE_HANDLER = lambda k: re.sub('\s+', ' ', re.sub('\n+', ' ', k.strip()))
     model_name = "csebuetnlp/mT5_multilingual_XLSum"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -117,6 +116,7 @@ def summarize_text(txt_loc):
     output_dir = os.path.join('Data', sub_dir)
     summary_filename = os.path.join(output_dir, f"{base_filename}_summary.txt")
 
+    # 將 summary 寫入文件
     with open(summary_filename, 'w', encoding='utf8') as f:
         for summary in summaries:
             f.write(summary + '\n')
