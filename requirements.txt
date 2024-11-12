@@ -1,4 +1,10 @@
-pdfplumber
-tqdm
-rank_bm25
 jieba
+tqdm==4.66.5
+rank_bm25==0.2.2
+transformers==4.45.2
+setence-transformers==3.2.0
+FlagEmbedding==1.2.11
+pdfplumber==0.11.4
+pdf2image==1.17.0
+pytesseract==0.3.13
+pillow==11.0.0

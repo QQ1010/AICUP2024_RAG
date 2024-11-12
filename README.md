@@ -6,60 +6,52 @@
 本屆挑戰賽聚焦在金融問答領域，提供豐富的資料庫供參賽者使用。參賽者需設計機制以提高檢索結果的準確性，包括從提供的語料中找出完整回答問題的正確資料等基本要求，以及應用大型語言模型的生成能力，產出正確且完整的回答。
 準備好了的話，現在就報名參加挑戰吧！
 
-## 競賽時程
-- 2024/10/30 公布複賽 Baseline 說明、複賽提交結果檔範例以及複賽雲端資源規格、複賽簡報模板
-- 2024/11/09 初賽 
-- 2024/11/11 通過初賽的隊伍繳交實作程式及指定說明文件
-- 2024/11/15 公布複賽名單
-- 2024/11/22 繳交複賽出席隊員名單
-- 2024/12/07 複賽 (實體)
-
 ## 相關連結
 - [T-Brain 官網](https://tbrain.trendmicro.com.tw/Competitions/Details/37)
 - [AI CUP 官網](https://www.aicup.tw/ai-cup-2024-competition)
 
-## 代辦任務
-### 任務s
-- 資料前處理
-    - **針對 PDF 的 圖片 和 表格 進行處理**
-    - **Summary**
-    - 產生更多的 queries/找其他金融相關的資料集
-    - 去 noise
-- 針對 Retrieve 方式改用其他方式 
-    - 不 Fine-tune: **套 Pre-train Models 去分析表現**
-        - cross model
-        - two tower model
-        - 要是支援中文的 Model
-        - 翻譯?
-    - Fine-tune e.g. 可能可以參考 [huggingface multiple choice](https://github.com/huggingface/transformers/blob/main/examples/pytorch/multiple-choice/run_swag_no_trainer.py)
-        - 找其他金融相關的資料集去 Fine-tune
-- Semantic ID ? 
-
-### 2024/10/25
-#### QQ
-- **針對 PDF 的 圖片 和 表格 進行處理**
-- **Summary**
-#### Liam
-- 不 Fine-tune: **套 Pre-train Models 去分析表現**
-
-### 2024/11/1
-#### QQ
-- Summary token limit 問題
-
-#### Lian
-- 看看 finance 9 個怎麼了
-- Image 解決 (OCR) (可能要先把 PDF轉成圖片檔)
-
-## 工作時程
-- 2024/10/18(五) 實作與訓練 Baseline Model，討論或 Survey 如何提出進步，有沒有什麼方法可以嘗試？
-- 2024/10/20(日) 完成 Baseline Model Training
-- 2024/10/21(一) 討論 Baseline Model 的結果以及進步方法
-- 2024/10/25(五) 進步方法完成並嘗試結果，討論下一步
-- 2024/11/06(三) 討論
-- 2024/11/09 參加初賽，繳交結果到系統 (only 3 次機會)
+## 資料夾說明
+```
+.
+├ Preprocess
+| ├ Data                     // 前處理後的資料
+| | ├ finance
+| | | 1_text.txt
+| | | 1_text_summary.txt
+| | └ ...
+| | ├ insurance
+| | | 1_text.txt
+| | | 1_text_summary.txt
+| | └ ...
+│ ├ data_preprocess.py
+│ └ README.md
+├ Model
+│ ├ retrieval.py
+│ └ README.md
+├ Data                       // 原始資料(需自行下載)
+| ├ reference
+| │ ├ finance
+| | | 1.pdf
+| | | ..
+| | └ 1034.pdf 
+| │ ├ insurance
+| | | 1.pdf
+| | | ..
+| | └ 643.pdf 
+├ main.py
+├ requirements.txt
+└ README.md
+```
+注意 Data 資料集的內容需要先從雲端下載
+[雲端資料連結]()
 
 ## 安裝
 #### 注意：要在 Python 3 的環境
+Python=3.9.20
+```
+conda create -n aicup python=3.9.20
+```
+#### 安裝套件
 ```
 pip install -r requirements.txt
 ```
@@ -72,49 +64,7 @@ pip install -r requirements.txt
 > pip install tokenizers
 > pip install protobuf
 ```
-
-## [先不要安裝，會有衝突，待解決]
-#### 安裝圖片轉文字套件
-```
-> conda install -c conda-forge tesseract pytesseract
-
-> wget https://github.com/tesseract-ocr/tessdata_best/blob/main/chi_tra.traineddata
-
-> mv chi_tra.traineddata $(conda info --base)/envs/{your_condaEnvName}/share/tessdata/
-```
-檢查
-```
-tesseract -v
-```
-![alt text](image.png)
-
-```
-which tesseract
-```
-![alt text](image-1.png)
-
-## Liam 環境
-Python=3.9.20
-```
-conda create -n aicup python=3.9.20
-```
-Pytorch=2.4.1+cu121
-```
-pip install torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 --index-url https://download.pytorch.org/whl/cu121
-```
-Other packages
-```
-tqdm==4.66.5
-rank_bm25==0.2.2
-transformers==4.45.2
-setence-transformers==3.2.0
-FlagEmbedding==1.2.11
-pdfplumber==0.11.4
-pdf2image==1.17.0
-pytesseract==0.3.13
-pillow==11.0.0
-```
-Conda packages
+#### Conda packages
 ```
 conda install -c conda-forge tesseract=5.3.1
 conda install -c anaconda poppler=22.12.0
