@@ -2,6 +2,7 @@ import os
 import json
 import argparse
 from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pdfplumber
 import pytesseract
@@ -81,6 +82,55 @@ def preprocess_image(image):
     return image
 
 
+def process_file(file_name, base_path, ori_path):
+    """
+    處理單個檔案，讀取內容並執行 OCR。
+    """
+    file_path = os.path.join(base_path, file_name)
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            text = f.read()
+    except FileNotFoundError:
+        print(f"檔案 {file_path} 不存在，跳過此檔案。")
+        return
+    except Exception as e:
+        print(f"讀取檔案 {file_path} 時發生錯誤: {e}")
+        return
+    
+    processed_text = ''.join(line.replace(' ', '') for line in text.splitlines())
+    if processed_text:
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(processed_text)
+        print(f"已處理完成 {file_name}")
+
+    # 執行 OCR
+    # id = file_name.split('_')[0]
+    # pdf_path = os.path.join(ori_path, f"{id}.pdf")
+    # ocr_text = ocr_pdf(pdf_path)
+    
+    # if ocr_text:
+    #     with open(file_path, 'w', encoding='utf-8') as f:
+    #         f.write(ocr_text)
+    #     print(f"已處理完成 {file_name}")
+    # else:
+    #     print(f"OCR 失敗 {file_name}")
+
+
+def main(file_names, base_path, ori_path):
+    """
+    使用 ThreadPoolExecutor 並行處理多個檔案。
+    """
+    with ThreadPoolExecutor(max_workers=32) as executor:  # 可以調整 max_workers 的數量
+        futures = {executor.submit(process_file, file_name, base_path, ori_path): file_name for file_name in file_names}
+        
+        # 使用 tqdm 顯示進度
+        for future in tqdm(as_completed(futures), total=len(file_names)):
+            file_name = futures[future]
+            try:
+                future.result()
+            except Exception as e:
+                print(f"處理檔案 {file_name} 時發生錯誤: {e}")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Process some paths and files.')
@@ -113,24 +163,25 @@ if __name__ == "__main__":
     ori_path = os.path.join("Data", "reference", 'finance')
     base_path = os.path.join("Data", "dataPreprocessing", 'finance')
     file_names = [f for f in os.listdir(base_path) if f.endswith("_text.txt")]
-    file_names = sorted(file_names)
-    for file_name in tqdm(file_names):
-        print(f"處理檔案 {file_name}")
-        file_path = os.path.join(base_path, file_name)
-        try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                text = f.read()
-        except FileNotFoundError:
-            print(f"檔案 {file_path} 不存在，跳過此檔案。")
-        except Exception as e:
-            print(f"讀取檔案 {file_path} 時發生錯誤: {e}")
+    # # file_names = sorted(file_names)
+    # print(file_names)
+    # for file_name in tqdm(file_names):
+    #     print(f"處理檔案 {file_name}")
+    #     file_path = os.path.join(base_path, file_name)
+    #     try:
+    #         with open(file_path, 'r', encoding='utf-8') as f:
+    #             text = f.read()
+    #     except FileNotFoundError:
+    #         print(f"檔案 {file_path} 不存在，跳過此檔案。")
+    #     except Exception as e:
+    #         print(f"讀取檔案 {file_path} 時發生錯誤: {e}")
         
-        if text == '':
-            id = file_name.split('_')[0]
-            pdf_path = os.path.join(ori_path, f"{id}.pdf")
-            ocr_text = ocr_pdf(pdf_path)
-            with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(ocr_text)
+    #     id = file_name.split('_')[0]
+    #     pdf_path = os.path.join(ori_path, f"{id}.pdf")
+    #     ocr_text = ocr_pdf(pdf_path)
+    #     with open(file_path, 'w', encoding='utf-8') as f:
+    #         f.write(ocr_text)
+    main(file_names, base_path, ori_path)
         
 
     # test_path = '/home/guest/r12922a14/AICUP2024_RAG/Data/reference/finance/1.pdf'

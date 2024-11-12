@@ -9,6 +9,7 @@ def calculate_precision(y_true, y_pred):
     finance_false_cases = []
     insurance_false_cases = []
     faq_false_cases = []
+    total_cases = []
     for true, pred in zip(y_true, y_pred):
         if true["qid"] != pred["qid"]:
             raise ValueError(f"QID mismatch: ground truth qid={true['qid']}, prediction qid={pred['qid']}")
@@ -16,20 +17,22 @@ def calculate_precision(y_true, y_pred):
             if true["retrieve"] == pred["retrieve"]:
                 correct += 1
             else:
-                if true["category"] == "finance":
-                    finance_false_cases.append((true, pred))
-                elif true["category"] == "insurance":
-                    insurance_false_cases.append((true, pred))
-                elif true["category"] == "faq":
-                    faq_false_cases.append((true, pred))
+                total_cases.append((true['qid'], true['retrieve'], pred['retrieve']))
+                # if true["category"] == "finance":
+                #     finance_false_cases.append((true['qid'], true['retrieve'], pred['retrieve']))
+                # elif true["category"] == "insurance":
+                #     insurance_false_cases.append((true['qid'], true['retrieve'], pred['retrieve']))
+                # elif true["category"] == "faq":
+                #     faq_false_cases.append((true['qid'], true['retrieve'], pred['retrieve']))
     print("correct: ", correct)
     print("total: ", len(y_true))
-    print("finance_false_cases: ", len(finance_false_cases))
-    print("insurance_false_cases: ", len(insurance_false_cases))
-    print("faq_false_cases: ", len(faq_false_cases))
-    print("finance_false_cases: ", finance_false_cases)
-    print("insurance_false_cases: ", insurance_false_cases)
-    print("faq_false_cases: ", faq_false_cases)
+    print("total_cases: ", total_cases)
+    # print("finance_false_cases: ", len(finance_false_cases))
+    # print("insurance_false_cases: ", len(insurance_false_cases))
+    # print("faq_false_cases: ", len(faq_false_cases))
+    # print("finance_false_cases: ", finance_false_cases)
+    # print("insurance_false_cases: ", insurance_false_cases)
+    # print("faq_false_cases: ", faq_false_cases)
     return correct / len(y_true)
 
 if __name__ == "__main__":
@@ -41,7 +44,8 @@ if __name__ == "__main__":
 
     with open(args.ground_truth_path, 'r') as f:
         data = json.load(f)
-    y_true = data['ground_truths']
+    # y_true = data['ground_truths']
+    y_true = data['answers']
 
     with open(args.prediction_path, 'r') as f:
         data = json.load(f)
