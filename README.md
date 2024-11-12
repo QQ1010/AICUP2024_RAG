@@ -14,7 +14,7 @@
 ```
 .
 ├ Preprocess
-| ├ Data                     // 前處理後的資料
+| ├ Data                     ## 前處理後的資料，執行 data_preprocess.py 後產生
 | | ├ finance
 | | | 1_text.txt
 | | | 1_text_summary.txt
@@ -23,12 +23,22 @@
 | | | 1_text.txt
 | | | 1_text_summary.txt
 | | └ ...
+| | └ faq.json
 │ ├ data_preprocess.py
+│ ├ faq_text_concate.py
+│ ├ pdf2txt.py
 │ └ README.md
 ├ Model
 │ ├ retrieval.py
+│ ├ retrieval.sh
+│ ├ data_interface.py
 │ └ README.md
 ├ Data                       // 原始資料(需自行下載)
+| ├ dataset
+| │ ├ preliminary
+| | └ questions_example.json  // Retrieve 問題
+| │ ├ results
+| | └ pred_retrieve.json      // Retrieve 結果
 | ├ reference
 | │ ├ finance
 | | | 1.pdf
@@ -38,12 +48,13 @@
 | | | 1.pdf
 | | | ..
 | | └ 643.pdf 
-├ main.py
+| │ ├ faq
+| | └ pid_map_content.json
 ├ requirements.txt
+├ .gitignore
 └ README.md
 ```
-注意 Data 資料集的內容需要先從雲端下載
-[雲端資料連結]()
+注意 Data 資料集的內容需要先從官方檔案中下載
 
 ## 安裝
 #### 注意：要在 Python 3 的環境
@@ -69,3 +80,10 @@ pip install -r requirements.txt
 conda install -c conda-forge tesseract=5.3.1
 conda install -c anaconda poppler=22.12.0
 ```
+
+## 執行與使用
+1. 前往 Preprocess 資料夾中的 README.md 按照執行步驟產生資料
+2. 前往 Model 資料夾中的 README.md 按照執行步驟產生結果
+
+注意事項
+使用 bash 檔時，請檢查路徑是否正確
